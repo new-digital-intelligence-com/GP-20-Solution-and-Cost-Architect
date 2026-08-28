@@ -1,0 +1,18 @@
+{
+  "name": "ndi-ai-employees",
+  "owner": {
+    "name": "New Digital Intelligence",
+    "url": "https://new-digital-intelligence.com"
+  },
+  "description": "NDI's AI Employee plugins for Claude Code and Cowork.",
+  "plugins": [
+    {
+      "name": "gp20-solution-cost-architect",
+      "source": "./plugins/gp20-solution-cost-architect",
+      "displayName": "GP-20 — Solution & Cost Architect",
+      "description": "Turns an RFP into a costed solution with a pricing form and proposal deck. Reads the tender, extracts sizing parameters with source citations, clarifies the gaps through a structured dialogue, runs the cost model for the relevant offering, and produces the artefacts.",
+      "category": "operations",
+      "keywords": ["rfp", "tender", "pricing", "solution-design", "presales", "ndi"]
+    }
+  ]
+}

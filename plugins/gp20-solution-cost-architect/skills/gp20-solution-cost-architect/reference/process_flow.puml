@@ -1,0 +1,253 @@
+@startuml GP20_Process_Flow
+' GP-20 · Solution & Cost Architect — skill process flow
+' Architecture: one workflow, pluggable model packs.
+'
+' Notation follows the NSC "RFP Engagement with AI" convention:
+' human task / AI agent task / deterministic tool / offering model / decision
+'
+' Render:
+'   plantuml -tsvg process_flow.puml
+'   rsvg-convert -w 2600 -a --background-color=white GP20_Process_Flow.svg -o GP20_Process_Flow.png
+'
+' NOTES FOR ANYONE EDITING THIS FILE
+'  * The name on the opening directive names the OUTPUT file, not the source
+'    file. Never write that directive again inside a comment — PlantUML reads
+'    it even here and starts a second, empty diagram.
+'  * A <size:n> tag must open and close on the same physical line, or
+'    PlantUML emits the literal closing tag into the diagram.
+'  * `backward:` inside a repeat loop is unsupported on 1.2020.02 — use while/endwhile.
+'  * Avoid angle brackets in label text; PlantUML reads them as creole tags.
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam defaultFontSize 13
+skinparam ArrowColor #46586B
+skinparam ArrowFontColor #46586B
+skinparam ArrowFontSize 12
+skinparam TitleFontSize 18
+skinparam TitleFontColor #1F3556
+
+skinparam activity {
+  BackgroundColor #DCE7EF
+  BorderColor #2E6E8E
+  BorderThickness 1.2
+  FontColor #1F3556
+  FontSize 13
+  DiamondBackgroundColor #FDF3E4
+  DiamondBorderColor #C8791A
+  DiamondFontColor #7A4A0C
+  DiamondFontSize 12
+  StartColor #1F3556
+  EndColor #1F3556
+  BarColor #2E6E8E
+}
+
+skinparam swimlane {
+  BorderColor #9FB3C4
+  BorderThickness 1.4
+  TitleFontSize 15
+}
+
+skinparam note {
+  BackgroundColor #FDF3E4
+  BorderColor #C8791A
+  FontColor #5C3A0A
+  FontSize 11
+}
+
+title GP-20 · Solution & Cost Architect — process flow
+
+|#F4F7FA|<color:#1F3556>SOLUTION SHAPER</color>|
+start
+#F2F5F8:RFP, ITT or tender arrives;
+#F2F5F8:Supply the document, plus any
+annex, schedule or rate card held;
+note right
+  .docx, .xlsx or
+  meeting notes
+end note
+
+|#E4EDF4|<color:#1F3556>GP-20 SKILL  (Claude)</color>|
+:Read every input in full
+before extracting anything;
+
+|#EAF3EC|<color:#1F3556>SKILL CORE  ·  offering-agnostic</color>|
+#E3F0E7:**read_docx.py**  ·  **openpyxl**
+<size:11>stdlib reader — no pip, no network</size>;
+
+|#E4EDF4|<color:#1F3556>GP-20 SKILL  (Claude)</color>|
+:Identify the offering the
+tender is actually asking for;
+
+|#EAF3EC|<color:#1F3556>SKILL CORE  ·  offering-agnostic</color>|
+#E3F0E7:**registry.py**   list  ·  detect  ·  describe
+<size:11>packs discovered from the models folder — core is never edited</size>;
+
+|#E4EDF4|<color:#1F3556>GP-20 SKILL  (Claude)</color>|
+if (Does an installed pack\ncover this offering?) then (**yes**)
+else (no)
+  #FDF3E4:State plainly that no cost model
+  exists, and describe what a pack
+  would need to cover it;
+  note right
+    **No pack, no price.**
+    An improvised number is
+    worse than an honest gap.
+  end note
+  stop
+endif
+
+:State which pack was chosen,
+and why, before going further;
+
+if (Does the tender span\nmore than one offering?) then (**yes**)
+  #FDF3E4:Run each pack separately, then assign
+  ownership of the service desk — price it with
+  the <b>service-desk</b> pack, and set
+  **service_desk: false** on the other pack;
+  note right
+    **managed-lan** and **daas** each embed a
+    simplified desk, because a managed
+    service without one is not a service.
+    Without this step the desk is
+    priced twice.
+  end note
+else (no)
+endif
+
+|#EAF3EC|<color:#1F3556>SKILL CORE  ·  offering-agnostic</color>|
+#E3F0E7:**registry.py describe**
+<size:11>parameter schema · declared gaps · price-material defaults</size>;
+
+|#E4EDF4|<color:#1F3556>GP-20 SKILL  (Claude)</color>|
+:Extract parameters and
+tag the source of every value
+<size:11>rfp · user · derived · default</size>;
+note right
+  Annex beats prose: a table
+  totalling 101 overrides
+  "approximately 100"
+end note
+:Present the extraction table
+with section-level citations;
+
+if (Gaps the pack declares\nas price-material?) then (**yes**)
+  :**AskUserQuestion**
+  <size:11>every option states its commercial consequence</size>;
+
+  |#F4F7FA|<color:#1F3556>SOLUTION SHAPER</color>|
+  #F2F5F8:Decide — coverage window, SLA tier,
+  language set, refresh cycle, migration ramp;
+
+  |#E4EDF4|<color:#1F3556>GP-20 SKILL  (Claude)</color>|
+else (no)
+endif
+
+:Write **params.json**
+<size:11>with a _sources map, so provenance survives the hand-off</size>;
+
+|#EAF3EC|<color:#1F3556>SKILL CORE  ·  offering-agnostic</color>|
+#E3F0E7:**run_estimate.py --pack KEY**
+<size:11>the single entry point — validates, dispatches, never prices</size>;
+
+|#F6EFF6|<color:#1F3556>MODEL PACKS  ·  offering-specific</color>|
+#EDE0EE:**pack.estimate(params)**
+<size:11>rates.py · sizing · coverage floor · year_profile</size>;
+note right
+  **Installed packs**
+  ====
+  <b>managed-lan</b>  —  labour-led; geographic coverage floor
+  <b>daas</b>  —  capital-led; the refresh cycle dominates
+  <b>service-desk</b>  —  language coverage floor
+  <b>iaas-compute</b>  —  consumption-led; ramped year profile
+  ----
+  A new offering is a new folder.
+  Nothing in the core changes.
+end note
+
+|#EAF3EC|<color:#1F3556>SKILL CORE  ·  offering-agnostic</color>|
+#E3F0E7:**contract.verify(result)**
+<size:11>shape · provenance tags · unflagged defaults · TCV reconciliation</size>;
+
+if (Does the result\nmeet the contract?) then (**yes**)
+else (no)
+  #FDF3E4:Report the violation and stop.
+  Do not patch around it;
+  stop
+endif
+
+#E3F0E7:**result.json**
+<size:11>estimate · assumption register · review flags</size>;
+
+|#E4EDF4|<color:#1F3556>GP-20 SKILL  (Claude)</color>|
+:Present solution shape, service
+commitments, transition, run
+resources by role and location, TCV;
+#FDF3E4:Surface **run.insight**
+<size:11>the pack's architectural observation — what actually sets the price</size>;
+:List **review_flags**
+<size:11>price-material defaults still awaiting confirmation</size>;
+
+|#F4F7FA|<color:#1F3556>SOLUTION SHAPER</color>|
+while (Run a sensitivity?) is (**yes**)
+  #F2F5F8:Name one parameter to change
+  <size:11>coverage · SLA tier · languages · refresh · ramp · term</size>;
+
+  |#E4EDF4|<color:#1F3556>GP-20 SKILL  (Claude)</color>|
+  :Rewrite **params.json**;
+
+  |#EAF3EC|<color:#1F3556>SKILL CORE  ·  offering-agnostic</color>|
+  #E3F0E7:**run_estimate.py** re-run;
+
+  |#E4EDF4|<color:#1F3556>GP-20 SKILL  (Claude)</color>|
+  #FDF3E4:Present the delta against
+  the named scenario;
+
+  |#F4F7FA|<color:#1F3556>SOLUTION SHAPER</color>|
+endwhile (no)
+
+#F2F5F8:Choose which scenario to price;
+
+|#E4EDF4|<color:#1F3556>GP-20 SKILL  (Claude)</color>|
+:Confirm the named scenario,
+then generate artefacts;
+note right
+  Never assume the baseline.
+  The scenario goes in the filename.
+end note
+
+|#EAF3EC|<color:#1F3556>SKILL CORE  ·  offering-agnostic</color>|
+fork
+  #E3F0E7:**write_pricing_form.py**
+  <size:11>Pricing_Form_scenario.xlsx</size>;
+fork again
+  #E3F0E7:**write_deck.py**
+  <size:11>Proposal_Deck_scenario.pptx</size>;
+end fork
+
+|#F4F7FA|<color:#1F3556>SOLUTION SHAPER</color>|
+#F2F5F8:Review the artefacts
+<size:11>every figure traceable to the RFP, the user, or a flagged default</size>;
+
+if (Approved?) then (**yes**)
+  #F2F5F8:Hand to **DO-2 Proposal Writer**
+  for the client submission;
+  stop
+else (no)
+  #F2F5F8:Revise inputs or
+  service configuration;
+  stop
+endif
+
+legend right
+|= |= Notation |
+|<#F2F5F8>            | Human task — Solution Shaper |
+|<#DCE7EF>            | AI agent task — GP-20 skill |
+|<#E3F0E7>            | Deterministic tool — skill core |
+|<#EDE0EE>            | Offering model — pluggable pack |
+|<#FDF3E4>            | Decision · architect's observation |
+<size:10>Illustrative model — synthetic rates, not NSC pricing.</size>
+endlegend
+
+@enduml

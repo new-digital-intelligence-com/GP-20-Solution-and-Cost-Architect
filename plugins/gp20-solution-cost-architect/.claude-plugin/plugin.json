@@ -1,0 +1,9 @@
+{
+  "name": "gp20-solution-cost-architect",
+  "displayName": "GP-20 — Solution & Cost Architect",
+  "description": "NDI's GP-20 AI Employee. Reads a customer RFP, extracts the sizing parameters with a source citation for each, asks for what only the bidder knows, runs the cost model for the relevant offering, and produces the pricing form and proposal deck — reporting any commitment the price does not meet rather than absorbing it.",
+  "author": { "name": "New Digital Intelligence" },
+  "repository": "https://github.com/new-digital-intelligence-com/GP-20-Solution-and-Cost-Architect",
+  "license": "UNLICENSED",
+  "keywords": ["rfp", "tender", "pricing", "solution-design", "presales", "ndi", "gp-20"]
+}
